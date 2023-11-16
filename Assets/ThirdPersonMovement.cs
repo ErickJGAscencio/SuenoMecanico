@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class ThirdPersonMovement : MonoBehaviour
 {
-    public float speed = 5f; // Character movement speed
-    public float rotationSpeed = 360f; // Character rotation speed
+    public float walk_speed = 5f; // Velocidad de movimiento del personaje
+    public float run_speed = 7f; // Velocidad de movimiento del personaje
+    public float rotationSpeed = 360f; // Velocidad de rotación del personaje
+    public float fuerzaSalto = 10f;
+    public float longitudRayo = 0.1f;
 
     private Rigidbody rb;
 
@@ -16,26 +19,52 @@ public class ThirdPersonMovement : MonoBehaviour
 
     void Update()
     {
-        // Get player inputs
+        // Obtener las entradas del jugador
         float horizontalMovement = Input.GetAxis("Horizontal");
         float verticalMovement = Input.GetAxis("Vertical");
 
-        // Calculate movement direction
+        // Calcular la dirección del movimiento
         Vector3 movement = new Vector3(horizontalMovement, 0f, verticalMovement).normalized;
 
-        // If there is any movement input, move the character
         if (movement.magnitude >= 0.1f)
         {
-            // Calculate character rotation in a plane
+            // Calcular el ángulo objetivo de rotación
             float targetAngle = Mathf.Atan2(movement.x, movement.z) * Mathf.Rad2Deg;
 
-            // Rotate towards the target direction
-            Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            // Establecer la rotación directamente
+            transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
 
-            // Move the character in the input direction
-            Vector3 movementVelocity = new Vector3(horizontalMovement, 0f, verticalMovement).normalized * speed;
+            // Seleccionar la velocidad de movimiento según la tecla Shift
+            Vector3 movementVelocity = Input.GetKey(KeyCode.LeftShift)
+                ? new Vector3(horizontalMovement, 0f, verticalMovement).normalized * run_speed
+                : new Vector3(horizontalMovement, 0f, verticalMovement).normalized * walk_speed;//sino
+
+            // Mover al personaje en la dirección del input
             rb.MovePosition(rb.position + movementVelocity * Time.deltaTime);
         }
+
+        // Saltar
+        if (Input.GetButtonDown("Jump") && EstaEnElSuelo())
+        {
+            rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.Impulse);
+        }
     }
+
+    bool EstaEnElSuelo()
+    {
+        RaycastHit hit;
+
+        // Lanzar un rayo hacia abajo desde el centro del personaje
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, longitudRayo))
+        {
+            // Comprobar si el objeto golpeado es parte del suelo
+            if (hit.collider.CompareTag("Suelo"))
+            {
+                return true; // El personaje está en el suelo
+            }
+        }
+
+        return false;
+    }
+
 }
