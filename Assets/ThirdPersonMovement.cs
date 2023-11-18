@@ -4,22 +4,22 @@ using UnityEngine;
 
 public class ThirdPersonMovement : MonoBehaviour
 {
-    public float walk_speed = 5f; // Velocidad de movimiento del personaje
-    public float run_speed = 7f; // Velocidad de movimiento del personaje
+    public float walkSpeed = 5f; // Velocidad de movimiento del personaje
+    public float runSpeed = 7f; // Velocidad de movimiento del personaje
     public float rotationSpeed = 360f; // Velocidad de rotación del personaje
-    public float fuerzaSalto = 10f;
-    public float longitudRayo = 0.1f;
+    public float jumpForce = 10f;
+    public float rayLenght = 0.1f;
 
     private Rigidbody rb;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>(); //Obtenemos el rigidbody del objeto (player)
     }
 
     void Update()
     {
-        // Obtener las entradas del jugador
+        // Obtener las entradas del player
         float horizontalMovement = Input.GetAxis("Horizontal");
         float verticalMovement = Input.GetAxis("Vertical");
 
@@ -36,26 +36,26 @@ public class ThirdPersonMovement : MonoBehaviour
 
             // Seleccionar la velocidad de movimiento según la tecla Shift
             Vector3 movementVelocity = Input.GetKey(KeyCode.LeftShift)
-                ? new Vector3(horizontalMovement, 0f, verticalMovement).normalized * run_speed
-                : new Vector3(horizontalMovement, 0f, verticalMovement).normalized * walk_speed;//sino
+                ? new Vector3(horizontalMovement, 0f, verticalMovement).normalized * runSpeed
+                : new Vector3(horizontalMovement, 0f, verticalMovement).normalized * walkSpeed;//sino
 
             // Mover al personaje en la dirección del input
             rb.MovePosition(rb.position + movementVelocity * Time.deltaTime);
         }
 
         // Saltar
-        if (Input.GetButtonDown("Jump") && EstaEnElSuelo())
+        if (Input.GetButtonDown("Jump") && inGround())
         {
-            rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
 
-    bool EstaEnElSuelo()
+    private bool inGround()
     {
         RaycastHit hit;
 
         // Lanzar un rayo hacia abajo desde el centro del personaje
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, longitudRayo))
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, rayLenght))
         {
             // Comprobar si el objeto golpeado es parte del suelo
             if (hit.collider.CompareTag("Suelo"))
